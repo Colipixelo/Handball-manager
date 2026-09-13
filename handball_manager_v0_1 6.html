@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Handball Manager – Prototyp v0.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#0E1420;
+    --bg-panel:#161F2E;
+    --bg-panel-2:#1D2739;
+    --line:#2B3648;
+    --ball:#FF7A3D;
+    --away:#35D0BA;
+    --text:#F1EDE3;
+    --muted:#8B94A6;
+    --danger:#E5533D;
+    --good:#4CC38A;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; background:#05070C; height:100%;}
+  body{
+    font-family:'Inter', system-ui, sans-serif;
+    color:var(--text);
+    display:flex; justify-content:center;
+  }
+  .phone{
+    width:100%; max-width:430px; min-height:100vh;
+    background:var(--bg-deep);
+    display:flex; flex-direction:column;
+    position:relative;
+    border-left:1px solid var(--line); border-right:1px solid var(--line);
+  }
+  h1,h2,h3{font-family:'Space Grotesk', sans-serif; margin:0; letter-spacing:.2px;}
+  .topbar{
+    padding:18px 18px 14px;
+    border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .club-id{display:flex; align-items:center; gap:10px;}
+  .crest{
+    width:34px; height:34px; border-radius:4px;
+    background:linear-gradient(155deg, var(--ball), #C9501F);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk'; font-weight:700; font-size:13px; color:#0E1420;
+  }
+  .club-name{font-family:'Space Grotesk'; font-weight:600; font-size:16px;}
+  .club-sub{font-size:11px; color:var(--muted);}
+  .budget{text-align:right; font-family:'Space Grotesk'; font-weight:600; font-size:15px;}
+  .budget-label{font-size:10px; color:var(--muted); font-family:'Inter'; font-weight:500;}
+
+  .screen{flex:1; overflow-y:auto; padding:18px; padding-bottom:90px;}
+  .hidden{display:none !important;}
+
+  .section-title{
+    font-size:11px; text-transform:uppercase; letter-spacing:1.5px;
+    color:var(--muted); margin:0 0 10px 2px; font-family:'Inter'; font-weight:600;
+  }
+
+  .card{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:16px;
+    margin-bottom:16px;
+  }
+
+  .fixture{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .fixture .team{flex:1; text-align:center;}
+  .fixture .team .dot{
+    width:44px; height:44px; border-radius:6px; margin:0 auto 8px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk'; font-weight:700; font-size:15px;
+  }
+  .fixture .team.home .dot{background:linear-gradient(155deg, var(--ball), #C9501F); color:#0E1420;}
+  .fixture .team.away .dot{background:var(--bg-panel-2); border:1px solid var(--line); color:var(--away);}
+  .fixture .team-name{font-size:12.5px; font-weight:500;}
+  .fixture .vs{
+    font-family:'Space Grotesk'; font-weight:700; color:var(--muted); font-size:13px; padding:0 10px;
+  }
+  .matchday{font-size:11px; color:var(--muted); margin-bottom:2px;}
+
+  button.primary{
+    width:100%; padding:14px; border:none; border-radius:6px;
+    background:var(--ball); color:#1A0F08; font-family:'Space Grotesk';
+    font-weight:700; font-size:14.5px; letter-spacing:.3px; cursor:pointer;
+  }
+  button.primary:active{filter:brightness(.92);}
+  button.primary:disabled{background:var(--bg-panel-2); color:var(--muted); cursor:default;}
+  button.ghost{
+    width:100%; padding:12px; border:1px solid var(--line); border-radius:6px;
+    background:transparent; color:var(--text); font-family:'Inter'; font-weight:600;
+    font-size:13.5px; cursor:pointer; margin-top:8px;
+  }
+
+  /* Squad */
+  .pos-group{margin-bottom:18px;}
+  .pos-group-label{font-family:'Space Grotesk'; font-weight:600; font-size:12.5px; color:var(--away); margin-bottom:6px;}
+  .player-row{
+    display:flex; align-items:center; gap:10px;
+    padding:9px 0; border-bottom:1px solid var(--line);
+  }
+  .player-row:last-child{border-bottom:none;}
+  .player-name{flex:1; font-size:13.5px; font-weight:500;}
+  .player-age{font-size:11px; color:var(--muted); margin-left:6px;}
+  .strength-ticks{display:flex; gap:2px;}
+  .tick{width:5px; height:12px; background:var(--line); border-radius:1px;}
+  .tick.on{background:var(--ball);}
+  .strength-num{font-family:'Space Grotesk'; font-weight:700; font-size:13px; width:24px; text-align:right;}
+
+  /* Taktik */
+  .option-grid{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px;}
+  .option-chip{
+    padding:9px 13px; border:1px solid var(--line); border-radius:5px;
+    font-size:12.5px; font-weight:500; color:var(--muted); cursor:pointer;
+  }
+  .option-chip.active{border-color:var(--ball); color:var(--ball); background:rgba(255,122,61,.08);}
+
+  /* Live match */
+  .scoreboard{
+    display:flex; align-items:center; justify-content:center; gap:22px;
+    padding:22px 0 14px;
+  }
+  .score-num{font-family:'Space Grotesk'; font-weight:700; font-size:44px; font-variant-numeric:tabular-nums;}
+  .score-sep{font-family:'Space Grotesk'; font-weight:600; font-size:22px; color:var(--muted);}
+  .clock{text-align:center; font-family:'Space Grotesk'; color:var(--away); font-size:13px; letter-spacing:1px; margin-bottom:14px;}
+  .events{max-height:220px; overflow-y:auto; margin-top:6px;}
+  .event-row{
+    display:flex; gap:10px; padding:7px 0; border-bottom:1px solid var(--line);
+    font-size:12.5px; align-items:center;
+  }
+  .event-min{font-family:'Space Grotesk'; color:var(--muted); width:34px; flex-shrink:0;}
+  .event-dot{width:7px; height:7px; border-radius:50%; flex-shrink:0;}
+
+  /* Table */
+  table{width:100%; border-collapse:collapse; font-size:12px;}
+  th{
+    text-align:left; font-family:'Inter'; font-weight:600; color:var(--muted);
+    font-size:10.5px; text-transform:uppercase; letter-spacing:.5px;
+    padding:6px 4px; border-bottom:1px solid var(--line);
+  }
+  td{padding:8px 4px; border-bottom:1px solid var(--line);}
+  tr.me td{color:var(--ball); font-weight:600;}
+  th.num, td.num{text-align:center;}
+
+  /* Training */
+  .day-grid{display:flex; flex-direction:column; gap:8px; margin-bottom:16px;}
+  .day-row{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:6px;
+    padding:11px 13px; cursor:pointer;
+  }
+  .day-row.locked{opacity:.55; cursor:default;}
+  .day-name{font-family:'Space Grotesk'; font-weight:600; font-size:13px; width:70px;}
+  .day-type{flex:1; font-size:12.5px; color:var(--away); text-align:right;}
+  .day-type .sub{display:block; font-size:10px; color:var(--muted); font-weight:400;}
+  .report-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:8px 0; border-bottom:1px solid var(--line); font-size:12.5px;
+  }
+  .report-row:last-child{border-bottom:none;}
+  .tag{
+    font-family:'Inter'; font-weight:600; font-size:10.5px; padding:2px 7px; border-radius:4px;
+  }
+  .tag.up{background:rgba(76,195,138,.15); color:var(--good);}
+  .tag.injury{background:rgba(229,83,61,.15); color:var(--danger);}
+  .fatigue-bar{width:34px; height:5px; border-radius:3px; background:var(--line); overflow:hidden; flex-shrink:0;}
+  .fatigue-bar > div{height:100%; background:var(--away);}
+  .injury-pill{font-size:10px; color:var(--danger); font-weight:600;}
+
+  .navbar{
+    position:sticky; bottom:0; left:0; right:0;
+    display:flex; background:var(--bg-panel);
+    border-top:1px solid var(--line);
+  }
+  .nav-btn{
+    flex:1; padding:12px 0 10px; text-align:center; background:none; border:none;
+    color:var(--muted); font-family:'Inter'; font-size:10.5px; font-weight:600; cursor:pointer;
+  }
+  .nav-btn .icon{font-size:18px; display:block; margin-bottom:3px;}
+  .nav-btn.active{color:var(--ball);}
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <div class="topbar">
+    <div class="club-id">
+      <div class="crest">TN</div>
+      <div>
+        <div class="club-name">TSV Nordstadt</div>
+        <div class="club-sub" id="table-pos-label">Tabellenplatz –</div>
+      </div>
+    </div>
+    <div class="budget">
+      <div id="budget-val">500.000&nbsp;€</div>
+      <div class="budget-label">Budget</div>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div class="screen" id="screen-home">
+    <div class="section-title">Nächstes Spiel</div>
+    <div class="card" id="next-fixture-card">
+      <div class="matchday" id="matchday-label">Spieltag 1</div>
+      <div class="fixture" id="fixture-slot"></div>
+      <button class="primary" id="btn-start-match">Spiel starten</button>
+    </div>
+
+    <div class="section-title">Vereinsform</div>
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:8px;">
+        <span style="color:var(--muted)">Letzte Ergebnisse</span>
+      </div>
+      <div id="form-strip" style="display:flex; gap:6px;"></div>
+    </div>
+  </div>
+
+  <!-- KADER -->
+  <div class="screen hidden" id="screen-kader">
+    <div class="section-title">Kader – TSV Nordstadt</div>
+    <div id="squad-list"></div>
+  </div>
+
+  <!-- TRAINING -->
+  <div class="screen hidden" id="screen-training">
+    <div class="section-title">Wochenplan</div>
+    <div class="day-grid" id="training-days"></div>
+    <button class="primary" id="btn-run-training">Woche simulieren</button>
+    <div id="training-report"></div>
+  </div>
+
+  <!-- TAKTIK -->
+  <div class="screen hidden" id="screen-taktik">
+    <div class="section-title">Angriff</div>
+    <div class="option-grid" id="attack-options"></div>
+    <div class="section-title">Abwehr</div>
+    <div class="option-grid" id="defense-options"></div>
+    <div class="section-title">Spielweise</div>
+    <div class="option-grid" id="style-options"></div>
+    <div class="card" style="font-size:12px; color:var(--muted); line-height:1.5;">
+      Deine Taktik beeinflusst die Teamstärke im nächsten Spiel. Ein aggressives 5:1 riskiert mehr Zeitstrafen, kann aber Gegenstöße provozieren – ein tiefes 6:0 steht sicherer, lässt aber weniger Tempo zu.
+    </div>
+  </div>
+
+  <!-- LIVE -->
+  <div class="screen hidden" id="screen-live">
+    <div class="matchday" id="live-matchday" style="text-align:center; margin-bottom:2px;"></div>
+    <div class="fixture" id="live-fixture-header" style="margin-bottom:0;"></div>
+    <div class="clock" id="live-clock">00:00</div>
+    <div class="scoreboard">
+      <span class="score-num" id="live-score-home">0</span>
+      <span class="score-sep">:</span>
+      <span class="score-num" id="live-score-away">0</span>
+    </div>
+    <div class="card" style="padding:12px 16px;">
+      <div class="events" id="live-events"></div>
+    </div>
+    <button class="primary hidden" id="btn-finish-match">Zur Tabelle</button>
+  </div>
+
+  <!-- TABELLE -->
+  <div class="screen hidden" id="screen-tabelle">
+    <div class="section-title">Liga – Spieltag <span id="league-day-label">1</span>/7</div>
+    <div class="card" style="padding:8px 10px;">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Team</th><th class="num">Sp</th><th class="num">Diff</th><th class="num">Pkt</th></tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="navbar">
+    <button class="nav-btn active" data-screen="home"><span class="icon">🏠</span>Home</button>
+    <button class="nav-btn" data-screen="kader"><span class="icon">👥</span>Kader</button>
+    <button class="nav-btn" data-screen="training"><span class="icon">🏋️</span>Training</button>
+    <button class="nav-btn" data-screen="taktik"><span class="icon">🧠</span>Taktik</button>
+    <button class="nav-btn" data-screen="tabelle"><span class="icon">🏆</span>Tabelle</button>
+  </div>
+</div>
+
+<script>
+(function(){
+
+  // ---------- Setup: Liga, Vereine, Kader ----------
+  const CLUB_NAMES = ["TSV Nordstadt","HC Adler","Rhein Handball","Berlin Lions","SG Wildcats","TuS Falken","VfL Sturm","Handball Löwen"];
+  const MY_CLUB = CLUB_NAMES[0];
+
+  const FIRST_NAMES = ["Jonas","Lukas","Finn","Mika","Elias","Paul","Tom","Noah","Leon","Ben","Jan","Nils","Erik","Kai"];
+  const LAST_NAMES = ["Weber","Schneider","Becker","Hoffmann","Krüger","Wolf","Richter","Vogel","Berger","Fuchs","Lang","Brandt"];
+  const POSITIONS = [["TW","Torwart"],["LA","Linksaußen"],["RL","Rückraum links"],["RM","Rückraum Mitte"],["RR","Rückraum rechts"],["RA","Rechtsaußen"],["KM","Kreisläufer"]];
+
+  let seed = 42;
+  function rand(){ seed = (seed*9301+49297) % 233280; return seed/233280; }
+  function randInt(min,max){ return Math.floor(rand()*(max-min+1))+min; }
+  function pick(arr){ return arr[Math.floor(rand()*arr.length)]; }
+
+  function makePlayer(posCode, posName, baseMin, baseMax){
+    const age = randInt(18,31);
+    const strength = randInt(baseMin, baseMax);
+    // Jüngere Spieler haben im Schnitt mehr Luft nach oben.
+    const headroom = age <= 21 ? randInt(10,24) : age <= 26 ? randInt(3,12) : randInt(0,3);
+    return {
+      name: pick(FIRST_NAMES)+" "+pick(LAST_NAMES),
+      pos: posCode, posName: posName,
+      age: age,
+      strength: strength,
+      potential: Math.min(99, strength + headroom),
+      fatigue: randInt(15,30),
+      injuredWeeks: 0
+    };
+  }
+
+  function makeSquad(baseMin, baseMax){
+    const squad = [];
+    POSITIONS.forEach(([code,name])=>{
+      const count = code==="TW" ? 2 : 2;
+      for(let i=0;i<count;i++) squad.push(makePlayer(code,name,baseMin,baseMax));
+    });
+    return squad;
+  }
+
+  const clubs = {};
+  clubs[MY_CLUB] = { squad: makeSquad(55,75), points:0, played:0, gf:0, ga:0, form:[] };
+  CLUB_NAMES.slice(1).forEach(name=>{
+    const lvl = randInt(0,1) ? [58,78] : [50,70];
+    clubs[name] = { squad: makeSquad(lvl[0], lvl[1]), points:0, played:0, gf:0, ga:0, form:[] };
+  });
+
+  function teamStrength(clubName, tactics){
+    const full = clubs[clubName].squad;
+    const squad = full.filter(p=>p.injuredWeeks<=0);
+    const pool = squad.length ? squad : full;
+    const avg = pool.reduce((s,p)=>{
+      const fatiguePenalty = p.fatigue>55 ? (p.fatigue-55)/6 : 0;
+      return s + (p.strength - fatiguePenalty);
+    },0) / pool.length;
+    let bonus = 0;
+    if(clubName === MY_CLUB){
+      if(tactics.attack==="tempo") bonus += 2;
+      if(tactics.attack==="7v6") bonus += 1;
+      if(tactics.defense==="offensiv") bonus += 1;
+      if(tactics.style==="aggressiv") bonus += 2;
+      if(tactics.style==="defensiv") bonus -= 1;
+    }
+    return avg + bonus;
+  }
+
+  // ---------- Spielplan (Round Robin, einfach) ----------
+  function buildSchedule(names){
+    const n = names.length;
+    const rounds = [];
+    const list = names.slice();
+    for(let r=0;r<n-1;r++){
+      const round = [];
+      for(let i=0;i<n/2;i++){
+        const home = list[i], away = list[n-1-i];
+        round.push(r%2===0 ? [home,away] : [away,home]);
+      }
+      rounds.push(round);
+      list.splice(1,0,list.pop());
+    }
+    return rounds;
+  }
+  const schedule = buildSchedule(CLUB_NAMES);
+  let currentDay = 0; // index into schedule
+
+  // ---------- Taktik-State ----------
+  const tactics = { attack:"positionsangriff", defense:"6:0", style:"normal" };
+  const ATTACK_OPTS = [["positionsangriff","Positionsangriff"],["tempo","Tempospiel"],["außen","Außen-fokussiert"],["7v6","7-gegen-6"]];
+  const DEFENSE_OPTS = [["6:0","6:0"],["5:1","5:1"],["3:2:1","3:2:1"],["offensiv","Offensive Manndeckung"]];
+  const STYLE_OPTS = [["aggressiv","Aggressiv"],["normal","Normal"],["defensiv","Defensiv"]];
+
+  function renderOptionGroup(container, options, key){
+    container.innerHTML = "";
+    options.forEach(([val,label])=>{
+      const chip = document.createElement("div");
+      chip.className = "option-chip" + (tactics[key]===val ? " active":"");
+      chip.textContent = label;
+      chip.onclick = ()=>{ tactics[key]=val; renderTaktik(); };
+      container.appendChild(chip);
+    });
+  }
+  function renderTaktik(){
+    renderOptionGroup(document.getElementById("attack-options"), ATTACK_OPTS, "attack");
+    renderOptionGroup(document.getElementById("defense-options"), DEFENSE_OPTS, "defense");
+    renderOptionGroup(document.getElementById("style-options"), STYLE_OPTS, "style");
+  }
+
+  // ---------- Training ----------
+  const TRAINING_TYPES = {
+    ausdauer:   { label:"Ausdauer",       sub:"Fitness & Kondition",  fatigue:6, growth:0.16, focus:"all" },
+    wurf:       { label:"Wurftraining",   sub:"Abschluss",            fatigue:4, growth:0.22, focus:"attack" },
+    abwehr:     { label:"Abwehr",         sub:"Defensivarbeit",       fatigue:4, growth:0.20, focus:"defense" },
+    taktik:     { label:"Taktik",         sub:"Spielverständnis",     fatigue:2, growth:0.12, focus:"all" },
+    spielzuege: { label:"Spielzüge",      sub:"Zusammenspiel",        fatigue:3, growth:0.14, focus:"all" },
+    regeneration:{ label:"Regeneration",  sub:"Erholung",             fatigue:-14, growth:0, focus:"none" }
+  };
+  const TRAINING_ORDER = ["ausdauer","wurf","abwehr","taktik","spielzuege","regeneration"];
+  const DAY_NAMES = ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
+  const trainingPlan = ["ausdauer","wurf","abwehr","taktik","spielzuege","regeneration"];
+  const DEFENSE_POS = ["TW","KM"];
+
+  function renderTraining(){
+    const container = document.getElementById("training-days");
+    container.innerHTML = "";
+    DAY_NAMES.forEach((day, i)=>{
+      const type = trainingPlan[i];
+      const info = TRAINING_TYPES[type];
+      const row = document.createElement("div");
+      row.className = "day-row";
+      row.innerHTML = `<div class="day-name">${day}</div>
+        <div class="day-type">${info.label}<span class="sub">${info.sub}</span></div>`;
+      row.onclick = ()=>{
+        const idx = TRAINING_ORDER.indexOf(trainingPlan[i]);
+        trainingPlan[i] = TRAINING_ORDER[(idx+1) % TRAINING_ORDER.length];
+        renderTraining();
+      };
+      container.appendChild(row);
+    });
+    const sundayRow = document.createElement("div");
+    sundayRow.className = "day-row locked";
+    sundayRow.innerHTML = `<div class="day-name">Sonntag</div><div class="day-type">Spiel<span class="sub">Ligaspieltag</span></div>`;
+    container.appendChild(sundayRow);
+  }
+
+  function simulateTrainingWeek(){
+    const squad = clubs[MY_CLUB].squad;
+    const improved = [];
+    const injured = [];
+
+    // Verletzte Spieler heilen um eine Woche weiter
+    squad.forEach(p=>{ if(p.injuredWeeks>0) p.injuredWeeks--; });
+
+    trainingPlan.forEach(type=>{
+      const info = TRAINING_TYPES[type];
+      squad.forEach(p=>{
+        if(p.injuredWeeks>0) return;
+        p.fatigue = Math.max(0, Math.min(100, p.fatigue + info.fatigue));
+        if(info.growth <= 0) return;
+        const focusMatch = info.focus==="all" ||
+          (info.focus==="attack" && !DEFENSE_POS.includes(p.pos)) ||
+          (info.focus==="defense" && DEFENSE_POS.includes(p.pos));
+        if(!focusMatch) return;
+        const ageFactor = p.age<=21 ? 1.4 : p.age<=26 ? 1.0 : p.age<=29 ? 0.5 : 0.15;
+        const headroom = p.potential - p.strength;
+        if(headroom <= 0) return;
+        const chance = info.growth * ageFactor * Math.min(1, headroom/15);
+        if(rand() < chance){
+          p.strength = Math.min(p.potential, p.strength + 1);
+          if(!improved.find(x=>x.name===p.name)) improved.push({name:p.name, to:p.strength});
+        }
+      });
+    });
+
+    // Verletzungsrisiko am Ende der Woche, abhängig von Müdigkeit
+    squad.forEach(p=>{
+      if(p.injuredWeeks>0) return;
+      const risk = p.fatigue>85 ? 0.10 : p.fatigue>70 ? 0.045 : p.fatigue>55 ? 0.015 : 0.004;
+      if(rand() < risk){
+        const weeks = p.fatigue>85 ? randInt(3,6) : randInt(1,3);
+        p.injuredWeeks = weeks;
+        injured.push({name:p.name, weeks});
+      }
+    });
+
+    renderTrainingReport(improved, injured);
+    renderTraining();
+  }
+
+  function renderTrainingReport(improved, injured){
+    const box = document.getElementById("training-report");
+    if(improved.length===0 && injured.length===0){
+      box.innerHTML = `<div class="section-title" style="margin-top:16px;">Wochenbericht</div>
+        <div class="card" style="font-size:12.5px; color:var(--muted);">Ruhige Woche – keine Verbesserungen oder Ausfälle.</div>`;
+      return;
+    }
+    let rows = "";
+    improved.forEach(p=>{
+      rows += `<div class="report-row"><span>${p.name}</span><span class="tag up">+1 · ${p.to}</span></div>`;
+    });
+    injured.forEach(p=>{
+      rows += `<div class="report-row"><span>${p.name}</span><span class="tag injury">${p.weeks} Wo. verletzt</span></div>`;
+    });
+    box.innerHTML = `<div class="section-title" style="margin-top:16px;">Wochenbericht</div>
+      <div class="card" style="padding:6px 14px;">${rows}</div>`;
+  }
+
+  document.getElementById("btn-run-training").onclick = simulateTrainingWeek;
+
+  // ---------- Kader-Anzeige ----------
+  function renderSquad(){
+    const container = document.getElementById("squad-list");
+    container.innerHTML = "";
+    POSITIONS.forEach(([code,name])=>{
+      const players = clubs[MY_CLUB].squad.filter(p=>p.pos===code);
+      const group = document.createElement("div");
+      group.className = "pos-group";
+      const label = document.createElement("div");
+      label.className = "pos-group-label";
+      label.textContent = code + " · " + name;
+      group.appendChild(label);
+      players.forEach(p=>{
+        const row = document.createElement("div");
+        row.className = "player-row";
+        const ticks = Array.from({length:10}, (_,i)=>
+          `<span class="tick ${i < Math.round(p.strength/10) ? 'on':''}"></span>`
+        ).join("");
+        const status = p.injuredWeeks>0
+          ? `<span class="injury-pill">${p.injuredWeeks} Wo. verletzt</span>`
+          : `<div class="fatigue-bar"><div style="width:${p.fatigue}%; background:${p.fatigue>70?'var(--danger)':'var(--away)'}"></div></div>`;
+        row.innerHTML = `
+          <div class="player-name">${p.name}<span class="player-age">${p.age} J.</span></div>
+          ${status}
+          <div class="strength-ticks">${ticks}</div>
+          <div class="strength-num">${p.strength}</div>`;
+        group.appendChild(row);
+      });
+      container.appendChild(group);
+    });
+  }
+
+  // ---------- Home / Fixture ----------
+  function getMyFixture(dayIndex){
+    if(dayIndex >= schedule.length) return null;
+    return schedule[dayIndex].find(m => m[0]===MY_CLUB || m[1]===MY_CLUB);
+  }
+
+  function renderHome(){
+    document.getElementById("matchday-label").textContent = "Spieltag " + Math.min(currentDay+1, schedule.length) + " / " + schedule.length;
+    const fixture = getMyFixture(currentDay);
+    const slot = document.getElementById("fixture-slot");
+    const startBtn = document.getElementById("btn-start-match");
+    if(!fixture){
+      slot.innerHTML = `<div style="text-align:center; width:100%; color:var(--muted); font-size:13px; padding:10px 0;">Saison beendet.</div>`;
+      startBtn.disabled = true;
+      startBtn.textContent = "Saison beendet";
+    } else {
+      const [home,away] = fixture;
+      const initials = s => s.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+      slot.innerHTML = `
+        <div class="team home"><div class="dot">${initials(home)}</div><div class="team-name">${home}</div></div>
+        <div class="vs">VS</div>
+        <div class="team away"><div class="dot">${initials(away)}</div><div class="team-name">${away}</div></div>`;
+      startBtn.disabled = false;
+      startBtn.textContent = "Spiel starten";
+    }
+    // Form
+    const strip = document.getElementById("form-strip");
+    strip.innerHTML = "";
+    const form = clubs[MY_CLUB].form.slice(-5);
+    if(form.length===0){
+      strip.innerHTML = `<span style="font-size:12px; color:var(--muted);">Noch keine Spiele</span>`;
+    } else {
+      form.forEach(r=>{
+        const chip = document.createElement("div");
+        chip.style.cssText = "width:26px; height:26px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk'; font-weight:700; font-size:11px;";
+        chip.style.background = r==="S" ? "rgba(76,195,138,.15)" : r==="U" ? "rgba(139,148,166,.15)" : "rgba(229,83,61,.15)";
+        chip.style.color = r==="S" ? "var(--good)" : r==="U" ? "var(--muted)" : "var(--danger)";
+        chip.textContent = r;
+        strip.appendChild(chip);
+      });
+    }
+    document.getElementById("table-pos-label").textContent = "Tabellenplatz " + getMyRank();
+  }
+
+  function getMyRank(){
+    const ranked = rankedTable();
+    return ranked.findIndex(r=>r.name===MY_CLUB) + 1;
+  }
+
+  function rankedTable(){
+    return CLUB_NAMES.map(name=>({name, ...clubs[name]}))
+      .sort((a,b)=> b.points-a.points || (b.gf-b.ga)-(a.gf-a.ga) || b.gf-a.gf);
+  }
+
+  function renderTable(){
+    document.getElementById("league-day-label").textContent = Math.min(currentDay, schedule.length);
+    const body = document.getElementById("table-body");
+    body.innerHTML = "";
+    rankedTable().forEach((r,i)=>{
+      const tr = document.createElement("tr");
+      if(r.name===MY_CLUB) tr.className = "me";
+      tr.innerHTML = `<td>${i+1}</td><td>${r.name}</td><td class="num">${r.played}</td><td class="num">${r.gf-r.ga>=0?"+":""}${r.gf-r.ga}</td><td class="num">${r.points}</td>`;
+      body.appendChild(tr);
+    });
+  }
+
+  // ---------- Simulation ----------
+  function simulateScore(strHome, strAway){
+    const diff = strHome - strAway;
+    const baseHome = 26 + diff*0.35 + (randInt(-4,4));
+    const baseAway = 26 - diff*0.35 + (randInt(-4,4));
+    return [Math.max(15,Math.round(baseHome)), Math.max(15,Math.round(baseAway))];
+  }
+
+  function buildTimeline(homeGoals, awayGoals){
+    const events = [];
+    for(let i=0;i<homeGoals;i++) events.push({min: randInt(1,60), side:"home"});
+    for(let i=0;i<awayGoals;i++) events.push({min: randInt(1,60), side:"away"});
+    events.sort((a,b)=>a.min-b.min);
+    return events;
+  }
+
+  let liveTimer = null;
+
+  function startMatch(){
+    const fixture = getMyFixture(currentDay);
+    if(!fixture) return;
+    const [home,away] = fixture;
+    const sHome = teamStrength(home, tactics);
+    const sAway = teamStrength(away, tactics);
+    const [goalsHome, goalsAway] = simulateScore(sHome, sAway);
+    const timeline = buildTimeline(goalsHome, goalsAway);
+
+    document.getElementById("live-matchday").textContent = "Spieltag " + (currentDay+1);
+    document.getElementById("live-fixture-header").innerHTML = `
+      <div class="team home" style="flex:1"><div class="team-name" style="font-weight:600;">${home}</div></div>
+      <div class="vs">–</div>
+      <div class="team away" style="flex:1"><div class="team-name" style="font-weight:600;">${away}</div></div>`;
+    document.getElementById("live-score-home").textContent = "0";
+    document.getElementById("live-score-away").textContent = "0";
+    document.getElementById("live-events").innerHTML = "";
+    document.getElementById("btn-finish-match").classList.add("hidden");
+    showScreen("live");
+
+    let idx = 0, sh = 0, sa = 0, minute = 0;
+    clearInterval(liveTimer);
+    liveTimer = setInterval(()=>{
+      minute += 1;
+      document.getElementById("live-clock").textContent = String(minute).padStart(2,"0") + ":00";
+      while(idx < timeline.length && timeline[idx].min <= minute){
+        const ev = timeline[idx];
+        if(ev.side==="home"){ sh++; document.getElementById("live-score-home").textContent = sh; }
+        else { sa++; document.getElementById("live-score-away").textContent = sa; }
+        const row = document.createElement("div");
+        row.className = "event-row";
+        row.innerHTML = `<span class="event-min">${ev.min}'</span>
+          <span class="event-dot" style="background:${ev.side==='home'?'var(--ball)':'var(--away)'}"></span>
+          <span>Tor für ${ev.side==='home'?home:away}</span>`;
+        const evc = document.getElementById("live-events");
+        evc.appendChild(row);
+        evc.scrollTop = evc.scrollHeight;
+        idx++;
+      }
+      if(minute >= 60){
+        clearInterval(liveTimer);
+        finishMatch(home, away, sh, sa);
+      }
+    }, 90);
+  }
+
+  function resultLetter(gf, ga){ return gf>ga ? "S" : gf===ga ? "U" : "N"; }
+
+  function finishMatch(home, away, gh, ga){
+    document.getElementById("btn-finish-match").classList.remove("hidden");
+    [home,away].forEach(name=>{ clubs[name].played++; });
+    clubs[home].gf += gh; clubs[home].ga += ga;
+    clubs[away].gf += ga; clubs[away].ga += gh;
+    if(gh>ga) clubs[home].points += 2;
+    else if(gh<ga) clubs[away].points += 2;
+    else { clubs[home].points += 1; clubs[away].points += 1; }
+    if(home===MY_CLUB) clubs[MY_CLUB].form.push(resultLetter(gh,ga));
+    if(away===MY_CLUB) clubs[MY_CLUB].form.push(resultLetter(ga,gh));
+
+    // Andere Spiele des Spieltags simulieren
+    schedule[currentDay].forEach(([h,a])=>{
+      if(h===home && a===away) return;
+      const [gH,gA] = simulateScore(teamStrength(h,tactics), teamStrength(a,tactics));
+      clubs[h].played++; clubs[a].played++;
+      clubs[h].gf+=gH; clubs[h].ga+=gA; clubs[a].gf+=gA; clubs[a].ga+=gH;
+      if(gH>gA) clubs[h].points+=2; else if(gH<gA) clubs[a].points+=2; else { clubs[h].points+=1; clubs[a].points+=1; }
+    });
+
+    currentDay++;
+    const budgetEl = document.getElementById("budget-val");
+    const won = gh>ga && home===MY_CLUB || ga>gh && away===MY_CLUB;
+    if(won){
+      const cur = parseInt(budgetEl.textContent.replace(/\D/g,""));
+      budgetEl.textContent = (cur + 25000).toLocaleString("de-DE") + " €";
+    }
+  }
+
+  document.getElementById("btn-finish-match").onclick = ()=>{
+    renderHome(); renderTable();
+    showScreen("tabelle");
+  };
+  document.getElementById("btn-start-match").onclick = startMatch;
+
+  // ---------- Navigation ----------
+  function showScreen(name){
+    ["home","kader","training","taktik","live","tabelle"].forEach(s=>{
+      document.getElementById("screen-"+s).classList.toggle("hidden", s!==name);
+    });
+    document.querySelectorAll(".nav-btn").forEach(b=>{
+      b.classList.toggle("active", b.dataset.screen===name);
+    });
+    if(name==="home") renderHome();
+    if(name==="kader") renderSquad();
+    if(name==="training") renderTraining();
+    if(name==="taktik") renderTaktik();
+    if(name==="tabelle") renderTable();
+  }
+  document.querySelectorAll(".nav-btn").forEach(b=>{
+    b.onclick = ()=> showScreen(b.dataset.screen);
+  });
+
+  // ---------- Init ----------
+  renderHome();
+})();
+</script>
+</body>
+</html>
